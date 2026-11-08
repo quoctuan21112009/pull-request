@@ -16,7 +16,7 @@ jobs:
     runs-on: "ubuntu-latest"
     
     # ✅ Chỉ chạy khi PR từ đúng user
-    if: github.event.pull_request.user.login == 'quoctuan21112009-maker'
+    if: github.event.pull_request.user.login == 'quoctuan21112009'
     
     steps:
       - name: "Merge PR"
