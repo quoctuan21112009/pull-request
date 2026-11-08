@@ -1,0 +1,52 @@
+name: Merge PR
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+
+# ✅ THÊM permissions cần thiết
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  merge:
+    name: "Auto Merge PR"
+    runs-on: "ubuntu-latest"
+    
+    # ✅ Chỉ chạy khi PR từ đúng user
+    if: github.event.pull_request.user.login == 'quoctuan21112009-maker'
+    
+    steps:
+      - name: "Merge PR"
+        uses: "actions/github-script@v7"
+        with:
+          github-token: "${{ secrets.PAT }}" # ✅ Cần tạo secret PAT
+          script: |
+            const pull_number = context.payload.pull_request.number;
+            const repo = context.repo;
+            
+            console.log(`🔄 Đang merge PR #${pull_number}...`);
+            
+            try {
+              await github.rest.pulls.merge({
+                owner: repo.owner,
+                repo: repo.repo,
+                pull_number: pull_number,
+                merge_method: "merge",
+                commit_title: `Auto-merge PR #${pull_number}`,
+                commit_message: `Automatically merged by GitHub Actions workflow.`
+              });
+              
+              console.log(`✅ Đã merge thành công PR #${pull_number}`);
+              
+            } catch (error) {
+              console.log(`❌ Không thể merge PR #${pull_number}: ${error.message}`);
+              
+              // Kiểm tra xem có conflict không
+              if (error.status === 405) {
+                console.log("⚠️ PR không thể merge do conflict hoặc không mergeable.");
+              }
+              throw error;
+            }
